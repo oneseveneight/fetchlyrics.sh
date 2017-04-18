@@ -1,5 +1,5 @@
 #!/bin/bash
-
+rm -rf /tmp/lyrics/
 if dbus-send --print-reply \
 	--session \
 	--dest=org.mpris.MediaPlayer2.spotify \
@@ -28,8 +28,11 @@ then
 			string:'org.mpris.MediaPlayer2.Player' \
 			string:'Metadata' | grep albumArtist -A 2 | tail -n 1 | cut -c 26- | sed 's/"*"//g')
 		NAMECLN=$(echo "$ARTIST-$SONG" | sed -e 's/\(.*\)/\L\1/' \
-			-e 's/[\.\,\(\)\+?\x27]//g' \
+			-e 's/[\.\,\(\)\+?\x27\#]//g' \
+			-e 's/&/and/g' \
 			-e 's/ feat .*//g' \
+			-e 's/ - original .*//g' \
+			-e 's/ - remaster.*//g' \
 			-e 's/ /-/g')-lyrics 
 		if [[ -e /tmp/lyrics/$NAMECLN ]]
 		then
