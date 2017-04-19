@@ -1,3 +1,22 @@
+# fetchlyrics.sh - Fetches and displays lyrics for Spotify
+# Copyright (C) 2017 oneseveneight
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# 
+# Email: oneseveneight@airmail.cc
+
 #!/bin/bash
 rm -rf /tmp/lyrics/
 if dbus-send --print-reply \
@@ -28,30 +47,40 @@ then
 			string:'org.mpris.MediaPlayer2.Player' \
 			string:'Metadata' | grep albumArtist -A 2 | tail -n 1 | cut -c 26- | sed 's/"*"//g')
 		NAMECLN=$(echo "$ARTIST-$SONG" | sed -e 's/\(.*\)/\L\1/' \
-			-e 's/[\.\,\(\)\+?\x27\#]//g' \
+			-e 's/[\.,()?\x27#]//g' \
+			-e 's/ +//g' \
 			-e 's/&/and/g' \
 			-e 's/ feat .*//g' \
 			-e 's/ - original .*//g' \
 			-e 's/ - remaster.*//g' \
-			-e 's/ /-/g')-lyrics 
+			-e 's/ /-/g' \
+			-e 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ/aaaaeeeeiiiioooouuuuuuuu/' \
+			|tr -d '\200-\377')-lyrics 
 		if [[ -e /tmp/lyrics/$NAMECLN ]]
 		then
 			sleep 1
 		else
-			clear
+			clear && clear
 			echo "$ARTIST - $SONG"
 			rm /tmp/lyrics/*
-			wget -q https://genius.com/$NAMECLN -O /tmp/lyrics/$NAMECLN > /dev/null
-			cat /tmp/lyrics/$NAMECLN \
-				| grep -e '<br>' -e '</a>' -e '</p>' \
-				|tr -d "\n" \
-				|sed 's/<\/p>.*//' \
-				|sed 's/<br>/\n/g' \
-				|sed -e 's/.*@genius.*>//g' \
-				-e 's/}[^>]*>//g' \
-				-e 's/<[^>]*>//g' \
-				-e 's/    //g' \
-				-e 's/<a.*{//g' 
+			if wget -q https://genius.com/$NAMECLN -O /tmp/lyrics/$NAMECLN > /dev/null; then
+				cat /tmp/lyrics/$NAMECLN \
+					| grep -e '<br>' -e '</a>' -e '</p>' \
+					|tr -d "\n" \
+					|sed 's/<\/p>.*//' \
+					|sed 's/<br>/\n/g' \
+					|sed -e 's/}[^>]*>//g' \
+					-e 's/.*genius.*<\/span>//g' \
+					-e 's/<[^>]*>//g' \
+					-e 's/    //g' \
+					-e 's/<a.*{//g' \
+					-e 's/&amp;/\&/g'
+			elif [[ $SONG = "" ]]; then
+				echo "It appears Spotify has been closed, exiting..."
+				exit
+			else
+				echo "Could not retrive lyrics from https://genius.com/$NAMECLN"
+			fi
 		fi
 	done
 else
