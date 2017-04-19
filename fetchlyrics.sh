@@ -46,13 +46,13 @@ then
 			org.freedesktop.DBus.Properties.Get \
 			string:'org.mpris.MediaPlayer2.Player' \
 			string:'Metadata' | grep albumArtist -A 2 | tail -n 1 | cut -c 26- | sed 's/"*"//g')
-		NAMECLN=$(echo "$ARTIST-$SONG" | sed -e 's/\(.*\)/\L\1/' \
+		NAMECLN=$(echo "$ARTIST $SONG" | sed -e 's/\(.*\)/\L\1/' \
 			-e 's/[\.,()?\x27#]//g' \
-			-e 's/ +//g' \
 			-e 's/&/and/g' \
 			-e 's/ feat .*//g' \
-			-e 's/ - original .*//g' \
-			-e 's/ - remaster.*//g' \
+			-e 's/ - .*//g' \
+			-e 's/side[^:]*://g' \
+			-e 's/  */ /g' \
 			-e 's/ /-/g' \
 			-e 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ/aaaaeeeeiiiioooouuuuuuuu/' \
 			|tr -d '\200-\377')-lyrics 
