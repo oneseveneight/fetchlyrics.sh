@@ -1,3 +1,4 @@
+#!/bin/bash
 # fetchlyrics.sh - Fetches and displays lyrics for Spotify
 # Copyright (C) 2017 oneseveneight
 #
@@ -17,7 +18,6 @@
 # 
 # Email: oneseveneight@airmail.cc
 
-#!/bin/bash
 rm -rf /tmp/lyrics/
 if dbus-send --print-reply \
 	--session \
