@@ -50,10 +50,11 @@ then
 			-e 's/[\.,()?\:\x27#]//g' \
 			-e 's/&/and/g' \
 			-e 's/ feat .*//g' \
-			-e 's/ - .*//g' \
+			-e '/remix/!s/ - .*//g' \
 			-e 's/side[^:]*://g' \
 			-e 's/  */ /g' \
 			-e 's/ /-/g' \
+			-e 's/--*/-/g' \
 			-e 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ/aaaaeeeeiiiioooouuuuuuuu/' \
 			|tr -d '\200-\377')-lyrics 
 		if [[ -e /tmp/lyrics/$NAMECLN ]]
@@ -63,16 +64,18 @@ then
 			clear && clear
 			echo "$ARTIST - $SONG"
 			rm /tmp/lyrics/*
-			if wget -q https://genius.com/$NAMECLN -O /tmp/lyrics/$NAMECLN > /dev/null; then
+			if wget -q https://genius.com/$NAMECLN -O /tmp/lyrics/$NAMECLN; then
 				cat /tmp/lyrics/$NAMECLN \
-					| grep -e '<br>' -e '</a>' -e '</p>' \
+					|grep -e '<div' -e '<br>' -e '</a>' -e '</p>' \
 					|tr -d "\n" \
-					|sed 's/<\/p>.*//' \
-					|sed 's/<br>/\n/g' \
-					|sed -e 's/}[^>]*>//g' \
-					-e 's/.*genius.*<\/span>//g' \
+					|sed -e 's/Check <a.*GENIUS//g' \
+					-e 's/<\/p>.*//' \
+					-e 's/.*<div class="lyrics">//g' \
+					-e 's/<br>/\n/g' \
+					-e 's/}[^>]*>//g' \
 					-e 's/<[^>]*>//g' \
 					-e 's/    //g' \
+					-e 's/  //g' \
 					-e 's/<a.*{//g' \
 					-e 's/&amp;/\&/g'
 			elif [[ $SONG = "" ]]; then
